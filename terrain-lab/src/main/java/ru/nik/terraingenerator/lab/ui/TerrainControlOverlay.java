@@ -3,6 +3,7 @@ package ru.nik.terraingenerator.lab.ui;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.ui.CheckBox;
@@ -39,19 +40,27 @@ import ru.nik.terraingenerator.lab.render.HeightColorMode;
  */
 public final class TerrainControlOverlay implements Disposable {
 
+    //==Панель инструментов
+    /**
+     * Высота панели инструментов
+     */
     private static final float TOOLBAR_HEIGHT = 40f;
     private static final float TOOLBAR_HORIZONTAL_PADDING = 10f;
     private static final float TOOLBAR_VERTICAL_PADDING = 8f;
     private static final float TOOLBAR_BUTTON_WIDTH = 112f;
     private static final float TOOLBAR_SPACING = 8f;
 
-    private static final float PANEL_WIDTH = 620f;
-    private static final float SCULPT_PANEL_WIDTH = 460f;
+    private static final float GENERATOR_PANEL_WIDTH = 620f;
+    private static final float SCULPT_PANEL_WIDTH = 620f;
     private static final float PANEL_MARGIN = 16f;
     private static final float WINDOW_PADDING = 14f;
     private static final float SECTION_TOP_PADDING = 12f;
     private static final float SECTION_BOTTOM_PADDING = 6f;
     private static final float ROW_PADDING = 6f;
+
+    /**
+     * Высота строки в панелях инструментов
+     */
     private static final float CONTROL_ROW_HEIGHT = 32f;
     private static final float LABEL_COLUMN_MIN_WIDTH = 170f;
     private static final float CONTROL_TABLE_MIN_WIDTH = 360f;
@@ -73,7 +82,7 @@ public final class TerrainControlOverlay implements Disposable {
     private static final String SCULPT_WINDOW_TITLE = "Brush";
     private static final String APPLY_SEED_BUTTON_TEXT = "Apply seed";
     private static final String NEW_SEED_BUTTON_TEXT = "New seed";
-    private static final String GENERATE_NOW_BUTTON_TEXT = "Generate now";
+    private static final String GENERATE_NOW_BUTTON_TEXT = "Generate";
     private static final String AUTO_APPLY_CHECKBOX_TEXT = "";
     private static final String CLEAR_SCULPT_BUTTON_TEXT = "Clear sculpt layer";
 
@@ -291,7 +300,7 @@ public final class TerrainControlOverlay implements Disposable {
                 .padRight(TOOLBAR_HORIZONTAL_PADDING);
         stage.addActor(rootTable);
 
-        controlWindow.add(scrollPane).grow().minWidth(PANEL_WIDTH);
+        controlWindow.add(scrollPane).grow().minWidth(GENERATOR_PANEL_WIDTH);
         stage.addActor(controlWindow);
         applyPanelSection(PanelSection.GENERATOR);
         repositionWindow();
@@ -328,7 +337,7 @@ public final class TerrainControlOverlay implements Disposable {
         if (panelSection == PanelSection.GENERATOR) {
             scrollPane.setActor(generatorContentTable);
             controlWindow.getTitleLabel().setText(GENERATOR_WINDOW_TITLE);
-            controlWindow.setWidth(PANEL_WIDTH);
+            controlWindow.setWidth(GENERATOR_PANEL_WIDTH);
         } else {
             scrollPane.setActor(sculptContentTable);
             controlWindow.getTitleLabel().setText(SCULPT_WINDOW_TITLE);
@@ -621,7 +630,7 @@ public final class TerrainControlOverlay implements Disposable {
         TextButton button = new TextButton(text, skin);
         button.addListener(new ClickListener() {
             @Override
-            public void clicked(com.badlogic.gdx.scenes.scene2d.InputEvent event, float x, float y) {
+            public void clicked(InputEvent event, float x, float y) {
                 if (!updatingControls) {
                     action.run();
                     button.setChecked(false);

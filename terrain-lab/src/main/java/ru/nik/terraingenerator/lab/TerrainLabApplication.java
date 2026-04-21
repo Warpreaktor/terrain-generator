@@ -45,7 +45,7 @@ public final class TerrainLabApplication extends ApplicationAdapter {
     private static final float STATUS_PANEL_PADDING = 12f;
     private static final float STATUS_PANEL_TITLE_OFFSET = 20f;
     private static final float STATUS_PANEL_LINE_HEIGHT = 22f;
-    private static final float STATUS_PANEL_CORNER_MARGIN = 16f;
+    private static final float STATUS_PANEL_CORNER_MARGIN = 46f;
     private static final float STATUS_PANEL_BACKGROUND_ALPHA = 0.72f;
     private static final float STATUS_PANEL_BORDER_ALPHA = 0.90f;
 
@@ -139,7 +139,7 @@ public final class TerrainLabApplication extends ApplicationAdapter {
         this.snapshotIndex = 0;
         this.currentSeed = INITIAL_SEED;
         this.autoApplyGenerationEnabled = true;
-        this.statusPanelVisible = true;
+        this.statusPanelVisible = false;
         this.selectedCellX = GRID_WIDTH / 2;
         this.selectedCellY = GRID_HEIGHT / 2;
         this.brushRadiusInCells = DEFAULT_BRUSH_RADIUS;
