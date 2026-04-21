@@ -1,0 +1,35 @@
+import java.util.Locale
+
+plugins {
+    id 'application'
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(Integer.parseInt(jdkVersion.toString()))
+    }
+}
+
+dependencies {
+    implementation project(':terrain-core')
+    implementation "com.badlogicgames.gdx:gdx:${gdxVersion}"
+    implementation "com.badlogicgames.gdx:gdx-backend-lwjgl3:${gdxVersion}"
+    runtimeOnly "com.badlogicgames.gdx:gdx-platform:${gdxVersion}:natives-desktop"
+}
+
+application {
+    mainClass = 'ru.nik.terraingenerator.lab.TerrainLabMain'
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.release = Integer.parseInt(jdkVersion.toString())
+}
+
+tasks.named('run', JavaExec).configure {
+    workingDir = project.layout.projectDirectory.asFile
+    def operatingSystemName = System.getProperty('os.name').toLowerCase(Locale.ROOT)
+    if (operatingSystemName.contains('mac')) {
+        jvmArgs += ['-XstartOnFirstThread']
+    }
+}

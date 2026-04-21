@@ -1,0 +1,4 @@
+rootProject.name = 'terrain-generator'
+
+include 'terrain-core'
+include 'terrain-lab'

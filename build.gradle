@@ -1,0 +1,12 @@
+allprojects {
+    group = 'ru.nik.terraingenerator'
+    version = projectVersion
+
+    repositories {
+        mavenCentral()
+    }
+}
+
+tasks.register('clean', Delete) {
+    delete layout.buildDirectory
+}
