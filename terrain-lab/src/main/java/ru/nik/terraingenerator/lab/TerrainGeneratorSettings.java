@@ -10,7 +10,20 @@ package ru.nik.terraingenerator.lab;
  */
 public final class TerrainGeneratorSettings {
 
+    /**
+     * Минимально допустимая амплитуда итогового signed-рельефа.
+     *
+     * <p>Нулевое значение разрешено, чтобы библиотека могла строить
+     * полностью плоскую поверхность относительно базового нулевого уровня.</p>
+     */
     private static final float MIN_RELIEF_AMPLITUDE = 0f;
+
+    /**
+     * Максимально допустимая амплитуда итогового signed-рельефа.
+     *
+     * <p>Итоговая генерация после нормализации удерживается в диапазоне
+     * {@code -MAX_RELIEF_AMPLITUDE .. +MAX_RELIEF_AMPLITUDE}.</p>
+     */
     private static final float MAX_RELIEF_AMPLITUDE = 1.5f;
 
     private static final float MIN_MACRO_SCALE = 40f;
@@ -100,6 +113,33 @@ public final class TerrainGeneratorSettings {
      */
     public static TerrainGeneratorSettings fromPreset(TerrainGeneratorPreset terrainGeneratorPreset) {
         return terrainGeneratorPreset.createSettings();
+    }
+
+    /**
+     * Возвращает минимальную поддерживаемую signed-высоту итогового рельефа.
+     *
+     * @return нижняя граница допустимой высоты
+     */
+    public static float minimumSupportedElevation() {
+        return -MAX_RELIEF_AMPLITUDE;
+    }
+
+    /**
+     * Возвращает максимальную поддерживаемую signed-высоту итогового рельефа.
+     *
+     * @return верхняя граница допустимой высоты
+     */
+    public static float maximumSupportedElevation() {
+        return MAX_RELIEF_AMPLITUDE;
+    }
+
+    /**
+     * Возвращает базовый нулевой уровень рельефа.
+     *
+     * @return опорный нулевой уровень
+     */
+    public static float zeroElevation() {
+        return 0f;
     }
 
     public float reliefAmplitude() {

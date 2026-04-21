@@ -15,7 +15,6 @@ public final class TerrainGridRenderer {
     private static final float SELECTION_ALPHA = 0.95f;
     private static final float BRUSH_ALPHA = 0.75f;
     private static final float BRUSH_SEGMENT_COUNT = 48f;
-    private static final int PIXMAP_TOP_ROW_INDEX = 0;
     private static final int PIXMAP_VERTICAL_STEP = 1;
     private static final Color GRID_COLOR = new Color(1f, 1f, 1f, 1f);
     private static final Color SELECTION_COLOR = new Color(1f, 0.2f, 0.2f, SELECTION_ALPHA);
@@ -35,13 +34,19 @@ public final class TerrainGridRenderer {
      *
      * @param terrainGrid сетка высот
      * @param heightColorMode цветовой режим
+     * @param displayMaximumAbsoluteElevation стабильный диапазон отображения относительно нуля
      */
-    public void rebuild(TerrainGrid terrainGrid, HeightColorMode heightColorMode) {
+    public void rebuild(
+            TerrainGrid terrainGrid,
+            HeightColorMode heightColorMode,
+            float displayMaximumAbsoluteElevation
+    ) {
         disposeTexture();
 
         int terrainWidth = terrainGrid.width();
         int terrainHeight = terrainGrid.height();
         int lastPixmapRowIndex = terrainHeight - PIXMAP_VERTICAL_STEP;
+        float safeDisplayMaximumAbsoluteElevation = Math.max(displayMaximumAbsoluteElevation, 0.0001f);
 
         Pixmap pixmap = new Pixmap(terrainWidth, terrainHeight, Pixmap.Format.RGBA8888);
 
@@ -49,7 +54,8 @@ public final class TerrainGridRenderer {
             int pixmapY = lastPixmapRowIndex - terrainY;
 
             for (int terrainX = 0; terrainX < terrainWidth; terrainX++) {
-                float normalizedHeight = terrainGrid.getHeight(terrainX, terrainY);
+                float cellElevation = terrainGrid.getHeight(terrainX, terrainY);
+                float normalizedHeight = normalizeSignedElevation(cellElevation, safeDisplayMaximumAbsoluteElevation);
                 Color cellColor = TerrainColorResolver.resolve(normalizedHeight, heightColorMode);
                 pixmap.setColor(cellColor);
                 pixmap.drawPixel(terrainX, pixmapY);
@@ -59,6 +65,26 @@ public final class TerrainGridRenderer {
         texture = new Texture(pixmap);
         texture.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
         pixmap.dispose();
+    }
+
+    /**
+     * Нормализует signed-высоту так, чтобы ноль всегда отображался как середина
+     * цветовой шкалы, отрицательные значения попадали ниже середины, а положительные
+     * выше неё.
+     *
+     * <p>В отличие от прошлой версии здесь используется не текущий диапазон карты,
+     * а стабильный диапазон отображения. Благодаря этому локальная правка кистью не
+     * "перекрашивает" весь остальной мир из-за одной глубокой точки.</p>
+     *
+     * @param elevation signed-высота клетки
+     * @param maximumAbsoluteElevation максимальное абсолютное отклонение высоты от нуля
+     * @return значение в диапазоне от 0 до 1, где {@code 0.5} соответствует нулю
+     */
+    private float normalizeSignedElevation(float elevation, float maximumAbsoluteElevation) {
+        float normalizedOffset = elevation / (maximumAbsoluteElevation * 2f);
+        float signedMidpoint = 0.5f;
+        float normalizedHeight = signedMidpoint + normalizedOffset;
+        return Math.max(0f, Math.min(1f, normalizedHeight));
     }
 
     /**

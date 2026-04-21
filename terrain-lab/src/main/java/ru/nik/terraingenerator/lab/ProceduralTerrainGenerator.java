@@ -22,8 +22,10 @@ import ru.nik.terraingenerator.core.operation.TerrainOperationPipeline;
  */
 public final class ProceduralTerrainGenerator {
 
-    private static final float NORMALIZED_MIN_HEIGHT = 0f;
-    private static final float NORMALIZED_MAX_HEIGHT = 1f;
+    /**
+     * Базовый signed-уровень рельефа, вокруг которого строится карта.
+     */
+    private static final float ZERO_ELEVATION = 0f;
 
     private static final long MACRO_NOISE_SEED_OFFSET = 101L;
     private static final long RIDGE_NOISE_SEED_OFFSET = 211L;
@@ -84,9 +86,12 @@ public final class ProceduralTerrainGenerator {
      */
     private static TerrainOperationPipeline buildPipeline(long seed, TerrainGeneratorSettings terrainGeneratorSettings) {
         TerrainOperationPipeline terrainOperationPipeline = new TerrainOperationPipeline();
-        terrainOperationPipeline.add(new FillOperation(0f));
+        terrainOperationPipeline.add(new FillOperation(ZERO_ELEVATION));
 
         float reliefAmplitude = terrainGeneratorSettings.reliefAmplitude();
+        if (reliefAmplitude <= EPSILON) {
+            return terrainOperationPipeline;
+        }
         float smoothness = terrainGeneratorSettings.smoothness();
         float roughness = terrainGeneratorSettings.roughness();
         float ridgeStrength = terrainGeneratorSettings.ridgeStrength();
@@ -145,11 +150,13 @@ public final class ProceduralTerrainGenerator {
             terrainOperationPipeline.add(new SmoothOperation(smoothIterationCount));
         }
 
-        terrainOperationPipeline.add(new NormalizeOperation(NORMALIZED_MIN_HEIGHT, NORMALIZED_MAX_HEIGHT));
+        float targetMinimumElevation = -reliefAmplitude;
+        float targetMaximumElevation = reliefAmplitude;
+        terrainOperationPipeline.add(new NormalizeOperation(targetMinimumElevation, targetMaximumElevation));
 
         float elevationBias = terrainGeneratorSettings.elevationBias();
         if (Math.abs(elevationBias - 1f) > EPSILON) {
-            terrainOperationPipeline.add(new HeightCurveOperation(elevationBias));
+            terrainOperationPipeline.add(new HeightCurveOperation(elevationBias, reliefAmplitude));
         }
 
         return terrainOperationPipeline;

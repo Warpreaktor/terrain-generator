@@ -11,8 +11,15 @@ import ru.nik.terraingenerator.core.grid.TerrainGrid;
  */
 public final class TerrainSculptLayer {
 
-    private static final float MIN_NORMALIZED_HEIGHT = 0f;
-    private static final float MAX_NORMALIZED_HEIGHT = 1f;
+    /**
+     * Минимальная поддерживаемая signed-высота итогового рельефа.
+     */
+    private static final float MIN_SUPPORTED_SIGNED_HEIGHT = TerrainGeneratorSettings.minimumSupportedElevation();
+
+    /**
+     * Максимальная поддерживаемая signed-высота итогового рельефа.
+     */
+    private static final float MAX_SUPPORTED_SIGNED_HEIGHT = TerrainGeneratorSettings.maximumSupportedElevation();
     private static final float MINIMUM_BRUSH_RADIUS = 0.25f;
     private static final float DISTANCE_FALLOFF_POWER = 2f;
     private static final int SMOOTH_SAMPLE_RADIUS_IN_CELLS = 1;
@@ -112,7 +119,11 @@ public final class TerrainSculptLayer {
                     case FLATTEN -> interpolate(currentCombinedHeight, flattenTargetHeight, weightedBrushStrength);
                 };
 
-                float clampedTargetHeight = clamp(targetCombinedHeight, MIN_NORMALIZED_HEIGHT, MAX_NORMALIZED_HEIGHT);
+                float clampedTargetHeight = clamp(
+                        targetCombinedHeight,
+                        MIN_SUPPORTED_SIGNED_HEIGHT,
+                        MAX_SUPPORTED_SIGNED_HEIGHT
+                );
                 float nextDeltaHeight = clampedTargetHeight - baseHeight;
                 sculptDeltaGrid.setHeight(x, y, nextDeltaHeight);
             }
@@ -171,7 +182,7 @@ public final class TerrainSculptLayer {
         float baseHeight = proceduralBaseGrid.getHeight(cellX, cellY);
         float deltaHeight = deltaGrid.getHeight(cellX, cellY);
         float combinedHeight = baseHeight + deltaHeight;
-        return clamp(combinedHeight, MIN_NORMALIZED_HEIGHT, MAX_NORMALIZED_HEIGHT);
+        return clamp(combinedHeight, MIN_SUPPORTED_SIGNED_HEIGHT, MAX_SUPPORTED_SIGNED_HEIGHT);
     }
 
     /**

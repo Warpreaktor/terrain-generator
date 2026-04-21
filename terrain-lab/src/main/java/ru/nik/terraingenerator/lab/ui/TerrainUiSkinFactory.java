@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.scenes.scene2d.ui.CheckBox;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.List;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
@@ -21,9 +22,9 @@ import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 /**
  * Фабрика минималистичного скина для панели управления лаборатории.
  *
- * <p>Скин строится полностью в коде на основе одноцветной текстуры, чтобы не тянуть
- * в проект внешние UI-ассеты раньше времени. Позже этот слой можно безболезненно
- * заменить на skin, собранный в Skin Composer или другом редакторе.</p>
+ * <p>Скин строится полностью в коде на основе одноцветной текстуры, чтобы не тащить
+ * в проект внешние UI-ассеты раньше времени. Позже этот слой можно заменить на skin,
+ * собранный в Skin Composer, VisUI или другом редакторе.</p>
  */
 public final class TerrainUiSkinFactory {
 
@@ -38,6 +39,7 @@ public final class TerrainUiSkinFactory {
     private static final int SLIDER_KNOB_MIN_WIDTH = 12;
     private static final int SLIDER_KNOB_MIN_HEIGHT = 22;
     private static final int LIST_SELECTION_MIN_HEIGHT = 20;
+    private static final int CHECKBOX_BOX_SIZE = 18;
 
     private static final float UI_FONT_SCALE = 0.90f;
 
@@ -78,6 +80,8 @@ public final class TerrainUiSkinFactory {
         Drawable listSelectionDrawable = tintedDrawable(skin, LIST_SELECTION_COLOR, TEXT_FIELD_MIN_WIDTH, LIST_SELECTION_MIN_HEIGHT);
         Drawable sliderBackgroundDrawable = tintedDrawable(skin, BACKGROUND_SECTION_COLOR, BUTTON_MIN_WIDTH, SLIDER_BACKGROUND_MIN_HEIGHT);
         Drawable sliderKnobDrawable = tintedDrawable(skin, ACCENT_COLOR, SLIDER_KNOB_MIN_WIDTH, SLIDER_KNOB_MIN_HEIGHT);
+        Drawable checkboxOffDrawable = tintedDrawable(skin, BACKGROUND_SECTION_COLOR, CHECKBOX_BOX_SIZE, CHECKBOX_BOX_SIZE);
+        Drawable checkboxOnDrawable = tintedDrawable(skin, ACCENT_COLOR, CHECKBOX_BOX_SIZE, CHECKBOX_BOX_SIZE);
 
         skin.add("panel-background", panelDrawable);
         skin.add("section-background", sectionDrawable);
@@ -89,6 +93,8 @@ public final class TerrainUiSkinFactory {
         skin.add("list-selection", listSelectionDrawable);
         skin.add("slider-background", sliderBackgroundDrawable);
         skin.add("slider-knob", sliderKnobDrawable);
+        skin.add("checkbox-off", checkboxOffDrawable);
+        skin.add("checkbox-on", checkboxOnDrawable);
 
         createLabelStyle(skin, uiFont);
         createWindowStyle(skin, uiFont, panelDrawable);
@@ -98,15 +104,14 @@ public final class TerrainUiSkinFactory {
         List.ListStyle listStyle = createListStyle(uiFont, listSelectionDrawable);
         createSelectBoxStyle(skin, uiFont, sectionDrawable, hoverDrawable, listStyle, scrollPaneStyle);
         createSliderStyle(skin, sliderBackgroundDrawable, sliderKnobDrawable);
+        createCheckBoxStyle(skin, uiFont, checkboxOffDrawable, checkboxOnDrawable);
 
         skin.add("section-title-color", TEXT_MUTED_COLOR);
         return skin;
     }
 
     /**
-     * Создаёт одноцветную текстуру-основу для всех drawables.
-     *
-     * @return белая текстура размером 1x1 пиксель
+     * Создаёт одноцветную текстуру-основу для drawables.
      */
     private static Texture createBaseTexture() {
         Pixmap pixmap = new Pixmap(SINGLE_PIXEL_TEXTURE_SIZE, SINGLE_PIXEL_TEXTURE_SIZE, Pixmap.Format.RGBA8888);
@@ -120,8 +125,6 @@ public final class TerrainUiSkinFactory {
 
     /**
      * Создаёт bitmap-font для панели.
-     *
-     * @return шрифт панели управления
      */
     private static BitmapFont createUiFont() {
         BitmapFont uiFont = new BitmapFont();
@@ -130,10 +133,7 @@ public final class TerrainUiSkinFactory {
     }
 
     /**
-     * Создаёт стиль обычных текстовых меток.
-     *
-     * @param skin skin, в который будет зарегистрирован стиль
-     * @param uiFont шрифт панели
+     * Создаёт стиль обычных label-ов.
      */
     private static void createLabelStyle(Skin skin, BitmapFont uiFont) {
         Label.LabelStyle labelStyle = new Label.LabelStyle();
@@ -148,31 +148,18 @@ public final class TerrainUiSkinFactory {
     }
 
     /**
-     * Создаёт стиль окна панели управления.
-     *
-     * @param skin skin, в который будет зарегистрирован стиль
-     * @param uiFont шрифт панели
-     * @param backgroundDrawable фон окна
+     * Создаёт стиль окна.
      */
-    private static void createWindowStyle(
-            Skin skin,
-            BitmapFont uiFont,
-            Drawable backgroundDrawable
-    ) {
+    private static void createWindowStyle(Skin skin, BitmapFont uiFont, Drawable backgroundDrawable) {
         Window.WindowStyle windowStyle = new Window.WindowStyle();
         windowStyle.titleFont = uiFont;
+        windowStyle.titleFontColor = TEXT_PRIMARY_COLOR;
         windowStyle.background = backgroundDrawable;
         skin.add("default", windowStyle);
     }
 
     /**
-     * Создаёт стиль кнопок панели управления.
-     *
-     * @param skin skin, в который будет зарегистрирован стиль
-     * @param uiFont шрифт панели
-     * @param upDrawable фон обычного состояния
-     * @param overDrawable фон наведения
-     * @param downDrawable фон активного состояния
+     * Создаёт стиль кнопок.
      */
     private static void createTextButtonStyle(
             Skin skin,
@@ -181,96 +168,76 @@ public final class TerrainUiSkinFactory {
             Drawable overDrawable,
             Drawable downDrawable
     ) {
-        TextButton.TextButtonStyle style = new TextButton.TextButtonStyle();
-        style.font = uiFont;
-        style.up = upDrawable;
-        style.over = overDrawable;
-        style.down = downDrawable;
-        style.checked = downDrawable;
-        skin.add("default", style);
+        TextButton.TextButtonStyle textButtonStyle = new TextButton.TextButtonStyle();
+        textButtonStyle.font = uiFont;
+        textButtonStyle.fontColor = TEXT_PRIMARY_COLOR;
+        textButtonStyle.overFontColor = TEXT_PRIMARY_COLOR;
+        textButtonStyle.downFontColor = TEXT_PRIMARY_COLOR;
+        textButtonStyle.checkedFontColor = TEXT_PRIMARY_COLOR;
+        textButtonStyle.up = upDrawable;
+        textButtonStyle.over = overDrawable;
+        textButtonStyle.down = downDrawable;
+        textButtonStyle.checked = downDrawable;
+        skin.add("default", textButtonStyle);
     }
 
     /**
      * Создаёт стиль текстовых полей.
-     *
-     * @param skin skin, в который будет зарегистрирован стиль
-     * @param uiFont шрифт панели
-     * @param backgroundDrawable обычный фон
-     * @param focusedBackgroundDrawable фон в фокусе
-     * @param cursorDrawable курсор ввода
-     * @param selectionDrawable подсветка выделенного текста
      */
     private static void createTextFieldStyle(
             Skin skin,
             BitmapFont uiFont,
             Drawable backgroundDrawable,
-            Drawable focusedBackgroundDrawable,
+            Drawable focusedDrawable,
             Drawable cursorDrawable,
             Drawable selectionDrawable
     ) {
-        TextField.TextFieldStyle style = new TextField.TextFieldStyle();
-        style.font = uiFont;
-        style.fontColor = Color.WHITE;
-        style.background = backgroundDrawable;
-        style.focusedBackground = focusedBackgroundDrawable;
-        style.cursor = cursorDrawable;
-        style.selection = selectionDrawable;
-        skin.add("default", style);
+        TextField.TextFieldStyle textFieldStyle = new TextField.TextFieldStyle();
+        textFieldStyle.font = uiFont;
+        textFieldStyle.fontColor = TEXT_PRIMARY_COLOR;
+        textFieldStyle.messageFont = uiFont;
+        textFieldStyle.messageFontColor = TEXT_MUTED_COLOR;
+        textFieldStyle.cursor = cursorDrawable;
+        textFieldStyle.selection = selectionDrawable;
+        textFieldStyle.background = backgroundDrawable;
+        textFieldStyle.focusedBackground = focusedDrawable;
+        textFieldStyle.disabledBackground = backgroundDrawable;
+        skin.add("default", textFieldStyle);
     }
 
     /**
      * Создаёт стиль ScrollPane.
-     *
-     * @param skin skin, в который будет зарегистрирован стиль
-     * @param backgroundDrawable обычный фон
-     * @param hScrollDrawable фон полосы прокрутки
-     * @param hKnobDrawable ползунок полосы прокрутки
-     * @return созданный стиль
      */
     private static ScrollPane.ScrollPaneStyle createScrollPaneStyle(
             Skin skin,
             Drawable backgroundDrawable,
-            Drawable hScrollDrawable,
-            Drawable hKnobDrawable
+            Drawable trackDrawable,
+            Drawable knobDrawable
     ) {
-        ScrollPane.ScrollPaneStyle style = new ScrollPane.ScrollPaneStyle();
-        style.background = backgroundDrawable;
-        style.hScroll = hScrollDrawable;
-        style.hScrollKnob = hKnobDrawable;
-        style.vScroll = hScrollDrawable;
-        style.vScrollKnob = hKnobDrawable;
-        skin.add("default", style);
-        return style;
+        ScrollPane.ScrollPaneStyle scrollPaneStyle = new ScrollPane.ScrollPaneStyle();
+        scrollPaneStyle.background = backgroundDrawable;
+        scrollPaneStyle.hScroll = trackDrawable;
+        scrollPaneStyle.vScroll = trackDrawable;
+        scrollPaneStyle.hScrollKnob = knobDrawable;
+        scrollPaneStyle.vScrollKnob = knobDrawable;
+        skin.add("default", scrollPaneStyle);
+        return scrollPaneStyle;
+    }
+
+    /**
+     * Создаёт стиль списка для SelectBox.
+     */
+    private static List.ListStyle createListStyle(BitmapFont uiFont, Drawable selectionDrawable) {
+        List.ListStyle listStyle = new List.ListStyle();
+        listStyle.font = uiFont;
+        listStyle.fontColorSelected = TEXT_PRIMARY_COLOR;
+        listStyle.fontColorUnselected = TEXT_PRIMARY_COLOR;
+        listStyle.selection = selectionDrawable;
+        return listStyle;
     }
 
     /**
      * Создаёт стиль выпадающего списка.
-     *
-     * @param uiFont шрифт панели
-     * @param selectionDrawable drawable выделения элемента
-     * @return созданный стиль списка
-     */
-    private static List.ListStyle createListStyle(
-            BitmapFont uiFont,
-            Drawable selectionDrawable
-    ) {
-        List.ListStyle style = new List.ListStyle();
-        style.font = uiFont;
-        style.fontColorSelected = Color.WHITE;
-        style.fontColorUnselected = Color.LIGHT_GRAY;
-        style.selection = selectionDrawable;
-        return style;
-    }
-
-    /**
-     * Создаёт стиль SelectBox.
-     *
-     * @param skin skin, в который будет зарегистрирован стиль
-     * @param uiFont шрифт панели
-     * @param backgroundDrawable обычный фон
-     * @param backgroundOverDrawable фон наведения
-     * @param listStyle стиль раскрывающегося списка
-     * @param scrollPaneStyle стиль ScrollPane для раскрывающегося списка
      */
     private static void createSelectBoxStyle(
             Skin skin,
@@ -280,44 +247,49 @@ public final class TerrainUiSkinFactory {
             List.ListStyle listStyle,
             ScrollPane.ScrollPaneStyle scrollPaneStyle
     ) {
-        SelectBox.SelectBoxStyle style = new SelectBox.SelectBoxStyle();
-        style.font = uiFont;
-        style.fontColor = Color.WHITE;
-        style.background = backgroundDrawable;
-        style.backgroundOver = backgroundOverDrawable;
-        style.listStyle = listStyle;
-        style.scrollStyle = scrollPaneStyle;
-        skin.add("default", style);
+        SelectBox.SelectBoxStyle selectBoxStyle = new SelectBox.SelectBoxStyle();
+        selectBoxStyle.font = uiFont;
+        selectBoxStyle.fontColor = TEXT_PRIMARY_COLOR;
+        selectBoxStyle.background = backgroundDrawable;
+        selectBoxStyle.backgroundOver = backgroundOverDrawable;
+        selectBoxStyle.listStyle = listStyle;
+        selectBoxStyle.scrollStyle = scrollPaneStyle;
+        skin.add("default", selectBoxStyle);
     }
 
     /**
-     * Создаёт стиль Slider.
-     *
-     * @param skin skin, в который будет зарегистрирован стиль
-     * @param backgroundDrawable фон шкалы
-     * @param knobDrawable ручка ползунка
+     * Создаёт стиль слайдера.
      */
-    private static void createSliderStyle(
-            Skin skin,
-            Drawable backgroundDrawable,
-            Drawable knobDrawable
-    ) {
-        Slider.SliderStyle style = new Slider.SliderStyle();
-        style.background = backgroundDrawable;
-        style.knob = knobDrawable;
-        skin.add("default-horizontal", style);
-        skin.add("default-vertical", style);
-        skin.add("default", style);
+    private static void createSliderStyle(Skin skin, Drawable backgroundDrawable, Drawable knobDrawable) {
+        Slider.SliderStyle sliderStyle = new Slider.SliderStyle();
+        sliderStyle.background = backgroundDrawable;
+        sliderStyle.knob = knobDrawable;
+        skin.add("default-horizontal", sliderStyle);
+        skin.add("default-vertical", sliderStyle);
+        skin.add("default", sliderStyle);
     }
 
     /**
-     * Создаёт tinted drawable с указанными минимальными размерами.
-     *
-     * @param skin skin, содержащий базовую белую текстуру
-     * @param color цвет drawable
-     * @param minimumWidth минимальная ширина drawable
-     * @param minimumHeight минимальная высота drawable
-     * @return новый drawable
+     * Создаёт стиль чекбокса.
+     */
+    private static void createCheckBoxStyle(
+            Skin skin,
+            BitmapFont uiFont,
+            Drawable checkboxOffDrawable,
+            Drawable checkboxOnDrawable
+    ) {
+        CheckBox.CheckBoxStyle checkBoxStyle = new CheckBox.CheckBoxStyle();
+        checkBoxStyle.font = uiFont;
+        checkBoxStyle.fontColor = TEXT_PRIMARY_COLOR;
+        checkBoxStyle.checkboxOff = checkboxOffDrawable;
+        checkBoxStyle.checkboxOver = checkboxOffDrawable;
+        checkBoxStyle.checkboxOn = checkboxOnDrawable;
+        checkBoxStyle.checkboxOnOver = checkboxOnDrawable;
+        skin.add("default", checkBoxStyle);
+    }
+
+    /**
+     * Создаёт tinted drawable из white-текстуры skin-а.
      */
     private static Drawable tintedDrawable(
             Skin skin,
@@ -330,13 +302,7 @@ public final class TerrainUiSkinFactory {
     }
 
     /**
-     * Создаёт tinted drawable из указанного региона.
-     *
-     * @param baseRegion исходный регион
-     * @param color цвет drawable
-     * @param minimumWidth минимальная ширина drawable
-     * @param minimumHeight минимальная высота drawable
-     * @return новый drawable
+     * Создаёт tinted drawable из базового texture region.
      */
     private static Drawable tintedDrawableFromRegion(
             TextureRegion baseRegion,
